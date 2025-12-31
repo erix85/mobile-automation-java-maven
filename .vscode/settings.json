@@ -1,0 +1,68 @@
+{
+  // --- 1. CONFIGURACIÓN DE INTÉRPRETES (PYTHON Y JAVA) ---
+  "robot.python.executable": "${workspaceFolder}/venv/Scripts/python.exe",
+  "robot.language-server.python": "${workspaceFolder}/venv/Scripts/python.exe",
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-17",
+      "path": "C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.x", 
+      "default": true
+    }
+  ],
+  "maven.terminal.useJavaHome": true,
+
+  // --- 2. RUTAS DE BÚSQUEDA (PYTHONPATH) ---
+  "robot.pythonpath": [
+    "${workspaceFolder}/libraries",
+    "${workspaceFolder}/config",
+    "${workspaceFolder}/resources"
+  ],
+
+  // --- 3. OPTIMIZACIÓN DE RENDIMIENTO Y EXCLUSIONES ---
+  // Esto evita que VS Code se ponga lento al ignorar archivos pesados
+  "files.exclude": {
+    "**/venv": true,
+    "**/results": true,
+    "**/allure-results": true,
+    "**/target": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/.git": true,
+    "**/.project": true,
+    "**/.classpath": true,
+    "**/.settings": true
+  },
+  "search.exclude": {
+    "**/venv": true,
+    "**/results": true,
+    "**/target": true,
+    "**/allure-results": true
+  },
+  "robot.analysis.excludePatterns": [
+    "**/venv/**",
+    "**/results/**",
+    "**/allure-results/**"
+  ],
+
+  // --- 4. CONFIGURACIÓN DEL EDITOR Y FORMATO ---
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.formatOnSave": true,
+  "workbench.iconTheme": "material-icon-theme",
+  "files.autoSave": "onFocusChange",
+
+  // --- 5. CONFIGURACIÓN ESPECÍFICA DE ROBOT FRAMEWORK ---
+  "robot.lint.robocop.enabled": true,
+  "robot.completion.sections.order": [
+    "*** Settings ***",
+    "*** Variables ***",
+    "*** Keywords ***",
+    "*** Test Cases ***"
+  ],
+
+  // --- 6. OPTIMIZACIÓN DE LA JVM PARA JAVA ---
+  // Esto evita que el Language Server de Java consuma toda tu RAM
+  "java.jdt.ls.vmargs": "-XX:+UseParallelGC -Xmx2G -Xms100m",
+  "java.autobuild.enabled": true,
+  "java.import.maven.offline.enabled": false
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="MobileAutomationSuite" parallel="tests" thread-count="1"> <!-- Adjust thread-count as needed for parallel execution -->
+
+    <listeners>
+        <listener class-name="com.portfolio.mobileautomation.listeners.AllureTestListener"/>
+    </listeners>
+
+    <test name="ExampleAppTest">
+        <classes>
+            <class name="com.portfolio.mobileautomation.tests.ExampleTest"/>
+        </classes>
+    </test>
+
+    <!-- Add more <test> tags here for parallel execution -->
+
+</suite>
