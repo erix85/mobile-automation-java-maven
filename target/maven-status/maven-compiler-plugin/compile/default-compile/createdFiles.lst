@@ -1,0 +1,4 @@
+com\portfolio\mobileautomation\config\FrameworkConfig.class
+com\portfolio\mobileautomation\driver\DriverManager.class
+com\portfolio\mobileautomation\server\AppiumServerManager.class
+com\portfolio\mobileautomation\ui\BaseScreen.class

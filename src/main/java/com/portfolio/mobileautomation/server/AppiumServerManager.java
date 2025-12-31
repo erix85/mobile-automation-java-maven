@@ -40,6 +40,24 @@ public final class AppiumServerManager {
                     Thread.currentThread().interrupt();
                     logger.error("Interrupción al esperar la liberación del puerto", e);
                 }
+
+                int retryCount = 0;
+                int maxRetries = 5;
+                while (!isPortAvailable(CONFIG.appiumPort()) && retryCount < maxRetries) {
+                    logger.warn("El puerto {} sigue en uso después de intentar liberarlo. Reintentando en 1 segundo...", CONFIG.appiumPort());
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        logger.error("Interrupción al esperar la liberación del puerto", e);
+                    }
+                    retryCount++;
+                }
+
+                if (!isPortAvailable(CONFIG.appiumPort())) {
+                    logger.error("El puerto {} no se pudo liberar después de {} intentos. No se puede iniciar el servidor de Appium.", CONFIG.appiumPort(), maxRetries);
+                    throw new RuntimeException("No se pudo liberar el puerto " + CONFIG.appiumPort() + " para iniciar el servidor de Appium.");
+                }
             }
 
             logger.info("Iniciando Appium server...");
@@ -126,44 +144,41 @@ public final class AppiumServerManager {
 
     private static String findPidOnPort(int port) {
         String os = System.getProperty("os.name").toLowerCase();
-        String command;
-        Pattern pattern;
-
-        if (os.contains("win")) {
-            command = "netstat -ano";
-            pattern = Pattern.compile("TCP\s+0\.0\.0\.0:" + port + "\s+.*\s+LISTENING\s+(\d+)");
-        } else if (os.contains("nix") || os.contains("mac")) {
-            // This command directly returns PID for a given port
-            command = "lsof -t -i :" + port;
-            pattern = Pattern.compile("^(\d+)$"); // Pattern to match a PID on a single line
-        } else {
-            logger.warn("Sistema operativo no soportado para encontrar PID en puerto: {}", os);
-            return "";
-        }
+        String pid = "";
 
         try {
-            Process process = Runtime.getRuntime().exec(command);
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                String line;
-                // For 'lsof -t -i :port', output is usually just the PID on one line.
-                // For 'netstat', we need to parse.
-                if (os.contains("win")) {
+            Process process;
+            if (os.contains("win")) {
+                process = Runtime.getRuntime().exec("netstat -ano");
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    String line;
+                    Pattern pattern = Pattern.compile(":\\s*" + port + "\\s+.*?LISTENING\\s+(\\d+)");
                     while ((line = reader.readLine()) != null) {
                         Matcher matcher = pattern.matcher(line);
                         if (matcher.find()) {
-                            return matcher.group(1);
+                            pid = matcher.group(1);
+                            logger.debug("Found PID {} for port {} using netstat.", pid, port);
+                            break;
                         }
                     }
-                } else { // nix or mac
-                    line = reader.readLine(); // Read the first line, which should be the PID
-                    if (line != null && pattern.matcher(line).matches()) {
-                        return line.trim();
+                }
+            } else if (os.contains("nix") || os.contains("mac")) {
+                // Use lsof -t to get the PID directly
+                process = Runtime.getRuntime().exec("lsof -t -i :" + port);
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+                    pid = reader.readLine(); // lsof -t outputs PID on a single line
+                    if (pid != null) {
+                        pid = pid.trim();
+                        logger.debug("Found PID {} for port {} using lsof.", pid, port);
                     }
                 }
+            } else {
+                logger.warn("Sistema operativo no soportado para encontrar PID en puerto: {}", os);
             }
         } catch (IOException e) {
             logger.error("Excepción al ejecutar comando para encontrar PID en puerto {}: {}", port, e.getMessage());
         }
-        return "";
+
+        return pid;
     }
 }

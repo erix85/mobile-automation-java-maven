@@ -1,0 +1,3 @@
+com\portfolio\mobileautomation\listeners\AllureTestListener.class
+com\portfolio\mobileautomation\retry\RetryAnalyzer.class
+com\portfolio\mobileautomation\tests\ExampleTest.class
